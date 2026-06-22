@@ -323,8 +323,11 @@
     async function clearData() {
       if (!confirm('Clear ALL tracking data from Supabase? This cannot be undone.')) return;
       const { error } = await _sb.from('date_events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      if (error) { alert('Error clearing: ' + error.message); return; }
-      loadData();
+      if (error) { 
+        alert('Error clearing: ' + error.message); 
+        return; 
+      }
+      renderFromRows([]);
     }
 
     // ── Realtime subscription — updates dashboard live ──
