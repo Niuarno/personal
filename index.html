@@ -218,6 +218,7 @@
       100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -345,6 +346,18 @@
 <div class="confetti-burst" id="confetti-burst"></div>
 
 <script>
+  // ── SUPABASE ─────────────────────────────────────
+  const _sb = supabase.createClient(
+    'https://ylconbtcckqhpkzujhmv.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsY29uYnRjY2txaHBrenVqaG12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMTgyMjIsImV4cCI6MjA5NzY5NDIyMn0.h3ZDVkdzrYvKHrWsbwiD5moTlxUBsd7i7wGVhruituY'
+  );
+  // Stable session ID — one per browser tab visit
+  const SESSION_ID = sessionStorage.getItem('_dsid') || (() => {
+    const id = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    sessionStorage.setItem('_dsid', id);
+    return id;
+  })();
+
   // ── STATE ────────────────────────────────────────
   const state = {
     noCount: 0, yesGrowStep: 0,
@@ -355,6 +368,9 @@
   function logEvent(type, detail = {}) {
     state.events.push({ type, detail, time: new Date().toISOString() });
     try { localStorage.setItem('dateTrack', JSON.stringify(state)); } catch(e) {}
+    // Write to Supabase (fire-and-forget)
+    _sb.from('date_events').insert({ session_id: SESSION_ID, type, detail })
+      .then(({ error }) => { if (error) console.warn('[supabase]', error.message); });
   }
 
   // ── PETALS ───────────────────────────────────────

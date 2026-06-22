@@ -167,6 +167,7 @@
       line-height: 1.6;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <h1>🔒 Secret Dashboard</h1>
@@ -220,21 +221,25 @@
   <button class="clear-btn" onclick="clearData()">🗑 Clear all tracking data</button>
 
   <script>
+    // ── SUPABASE ───────────────────────────────────
+    const _sb = supabase.createClient(
+      'https://ylconbtcckqhpkzujhmv.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsY29uYnRjY2txaHBrenVqaG12Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMTgyMjIsImV4cCI6MjA5NzY5NDIyMn0.h3ZDVkdzrYvKHrWsbwiD5moTlxUBsd7i7wGVhruituY'
+    );
+
     const EVENT_LABELS = {
-      site_visited: { label: '🌐 Site Visited', color: '#e8b86d' },
-      yes_clicked:  { label: '💚 Said YES!!',   color: '#48bb78' },
-      no_clicked:   { label: '❌ Hit "No"',      color: '#e8849a' },
-      movie_selected: { label: '🎬 Picked Movie', color: '#90cdf4' },
-      went_to_movies: { label: '📽 Went to Movies', color: '#90cdf4' },
-      went_to_datetime: { label: '📅 Picking Date', color: '#b794f4' },
-      ticket_generated: { label: '🎟 Ticket Made!', color: '#68d391' },
+      site_visited:     { label: '🌐 Site Visited',     color: '#e8b86d' },
+      yes_clicked:      { label: '💚 Said YES!!',        color: '#48bb78' },
+      no_clicked:       { label: '❌ Hit "No"',           color: '#e8849a' },
+      movie_selected:   { label: '🎬 Picked Movie',      color: '#90cdf4' },
+      went_to_movies:   { label: '📽 Went to Movies',    color: '#90cdf4' },
+      went_to_datetime: { label: '📅 Picking Date',      color: '#b794f4' },
+      ticket_generated: { label: '🎟 Ticket Made!',      color: '#68d391' },
     };
 
-    function loadData() {
-      let raw;
-      try { raw = localStorage.getItem('dateTrack'); } catch(e) {}
-
-      if (!raw) {
+    // Reconstruct dashboard state from a flat array of DB rows
+    function renderFromRows(rows) {
+      if (!rows || rows.length === 0) {
         document.getElementById('stat-no').textContent = '0';
         document.getElementById('stat-yes').textContent = 'Not yet';
         document.getElementById('stat-movie').textContent = '—';
@@ -247,24 +252,31 @@
         return;
       }
 
-      const data = JSON.parse(raw);
+      // ── Derive state from events ──
+      const noEvents     = rows.filter(r => r.type === 'no_clicked');
+      const noCount      = noEvents.length > 0
+        ? Math.max(...noEvents.map(r => r.detail?.count || 0))
+        : 0;
+      const didYes       = rows.some(r => r.type === 'yes_clicked');
+      const movieRow     = [...rows].reverse().find(r => r.type === 'movie_selected');
+      const ticketRow    = [...rows].reverse().find(r => r.type === 'ticket_generated');
+      const visitRow     = rows.find(r => r.type === 'site_visited');
+      const ticketMade   = !!ticketRow;
 
-      document.getElementById('stat-no').textContent = data.noCount || 0;
+      // ── Stats ──
+      document.getElementById('stat-no').textContent    = noCount;
+      document.getElementById('stat-yes').textContent   = didYes ? 'YES!! 💕' : 'Not yet';
+      document.getElementById('stat-movie').textContent = movieRow?.detail?.movie || '—';
 
-      const didYes = (data.events || []).some(e => e.type === 'yes_clicked');
-      document.getElementById('stat-yes').textContent = didYes ? 'YES!! 💕' : 'Not yet';
+      // ── Date details ──
+      document.getElementById('d-movie').textContent = movieRow?.detail?.movie || '—';
+      document.getElementById('d-date').textContent  = ticketRow?.detail?.date  || '—';
+      document.getElementById('d-time').textContent  = ticketRow?.detail?.time  || '—';
+      document.getElementById('d-visit').textContent = visitRow
+        ? new Date(visitRow.created_at).toLocaleString()
+        : '—';
 
-      document.getElementById('stat-movie').textContent = data.selectedMovie?.name || '—';
-      document.getElementById('d-movie').textContent = data.selectedMovie ? `${data.selectedMovie.emoji || ''} ${data.selectedMovie.name}` : '—';
-      document.getElementById('d-date').textContent = data.selectedDate || '—';
-      document.getElementById('d-time').textContent = data.selectedTime || '—';
-
-      if (data.visitTime) {
-        const vt = new Date(data.visitTime);
-        document.getElementById('d-visit').textContent = vt.toLocaleString();
-      }
-
-      const ticketMade = (data.events || []).some(e => e.type === 'ticket_generated');
+      // ── Status badge ──
       const statusEl = document.getElementById('d-status');
       if (ticketMade) {
         statusEl.innerHTML = '<span class="badge green">🎉 Ticket Generated!</span>';
@@ -274,40 +286,56 @@
         statusEl.innerHTML = '<span class="badge">Waiting…</span>';
       }
 
-      const events = [...(data.events || [])].reverse();
-      if (events.length === 0) {
-        document.getElementById('event-list').innerHTML = '<div class="no-data">No events yet</div>';
-        return;
-      }
-
-      document.getElementById('event-list').innerHTML = events.map(e => {
-        const meta = EVENT_LABELS[e.type] || { label: e.type };
-        const t = new Date(e.time).toLocaleTimeString();
-        const detail = e.type === 'no_clicked' ? `(${e.detail?.count} total no's)` :
-                       e.type === 'movie_selected' ? e.detail?.movie :
-                       e.type === 'ticket_generated' ? `${e.detail?.movie} · ${e.detail?.date} ${e.detail?.time}` : '';
+      // ── Event log (newest first) ──
+      const reversed = [...rows].reverse();
+      document.getElementById('event-list').innerHTML = reversed.map(r => {
+        const meta   = EVENT_LABELS[r.type] || { label: r.type, color: '#e8849a' };
+        const t      = new Date(r.created_at).toLocaleTimeString();
+        const detail = r.type === 'no_clicked'       ? `(${r.detail?.count ?? ''} total no's)` :
+                       r.type === 'movie_selected'   ? r.detail?.movie :
+                       r.type === 'ticket_generated' ? `${r.detail?.movie} · ${r.detail?.date} ${r.detail?.time}` : '';
         return `
           <div class="event-item">
             <div>
-              <div class="event-type" style="color:${meta.color || '#e8849a'}">${meta.label}</div>
+              <div class="event-type" style="color:${meta.color}">${meta.label}</div>
               ${detail ? `<div class="event-detail">${detail}</div>` : ''}
             </div>
             <div class="event-time">${t}</div>
-          </div>
-        `;
+          </div>`;
       }).join('');
     }
 
-    function clearData() {
-      if (confirm('Clear all tracking? This cannot be undone.')) {
-        localStorage.removeItem('dateTrack');
-        loadData();
+    // ── Load all rows from Supabase ──
+    async function loadData() {
+      const { data, error } = await _sb
+        .from('date_events')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('[supabase] load error:', error.message);
+        return;
       }
+      renderFromRows(data);
     }
 
+    // ── Clear all rows from Supabase ──
+    async function clearData() {
+      if (!confirm('Clear ALL tracking data from Supabase? This cannot be undone.')) return;
+      const { error } = await _sb.from('date_events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) { alert('Error clearing: ' + error.message); return; }
+      loadData();
+    }
+
+    // ── Realtime subscription — updates dashboard live ──
+    _sb.channel('date_events_feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'date_events' }, () => {
+        loadData(); // re-fetch and re-render on every new event
+      })
+      .subscribe();
+
+    // Initial load
     loadData();
-    // auto-refresh every 10s
-    setInterval(loadData, 10000);
   </script>
 </body>
 </html>
