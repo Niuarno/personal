@@ -395,7 +395,11 @@
       bg.appendChild(p);
     }
   })();
-  logEvent('site_visited');
+  // Fetch IP and then log site visit
+  fetch('https://api.ipify.org?format=json')
+    .then(r => r.json())
+    .then(data => logEvent('site_visited', { ip: data.ip }))
+    .catch(() => logEvent('site_visited', { ip: 'unknown' }));
 
   // ── NAV ──────────────────────────────────────────
   function showScreen(id) {

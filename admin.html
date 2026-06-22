@@ -205,6 +205,10 @@
       <span class="info-val" id="d-visit">—</span>
     </div>
     <div class="info-row">
+      <span class="info-key">Visitor IP</span>
+      <span class="info-val" id="d-ip">—</span>
+    </div>
+    <div class="info-row">
       <span class="info-key">Status</span>
       <span class="info-val" id="d-status">—</span>
     </div>
@@ -247,6 +251,7 @@
         document.getElementById('d-date').textContent = '—';
         document.getElementById('d-time').textContent = '—';
         document.getElementById('d-visit').textContent = '—';
+        document.getElementById('d-ip').textContent = '—';
         document.getElementById('d-status').innerHTML = '<span class="badge">Waiting…</span>';
         document.getElementById('event-list').innerHTML = '<div class="no-data">No events yet — send her the link! 🌸</div>';
         return;
@@ -275,6 +280,7 @@
       document.getElementById('d-visit').textContent = visitRow
         ? new Date(visitRow.created_at).toLocaleString()
         : '—';
+      document.getElementById('d-ip').textContent = visitRow?.detail?.ip || '—';
 
       // ── Status badge ──
       const statusEl = document.getElementById('d-status');
@@ -293,7 +299,8 @@
         const t      = new Date(r.created_at).toLocaleTimeString();
         const detail = r.type === 'no_clicked'       ? `(${r.detail?.count ?? ''} total no's)` :
                        r.type === 'movie_selected'   ? r.detail?.movie :
-                       r.type === 'ticket_generated' ? `${r.detail?.movie} · ${r.detail?.date} ${r.detail?.time}` : '';
+                       r.type === 'ticket_generated' ? `${r.detail?.movie} · ${r.detail?.date} ${r.detail?.time}` :
+                       r.type === 'site_visited'     ? `IP: ${r.detail?.ip || 'unknown'}` : '';
         return `
           <div class="event-item">
             <div>
