@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔒 My Secret Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+    :root {
+      --rose: #e8849a;
+      --deep: #c45c78;
+      --cream: #fff8f3;
+      --text: #3d2030;
+      --soft: #8b5568;
+      --blush: #f9c6d0;
+      --green: #48bb78;
+      --warm: #fde8d8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a0f17;
+      color: #f0e0e8;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--rose);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .sub {
+      text-align: center;
+      color: #b08090;
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      max-width: 700px;
+      margin: 0 auto 32px;
+    }
+    .stat {
+      background: #2a1520;
+      border: 1px solid #4a2535;
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-val.rose  { color: var(--rose); }
+    .stat-val.green { color: var(--green); }
+    .stat-val.gold  { color: #e8b86d; }
+    .stat-label {
+      font-size: 12px;
+      color: #b08090;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .card {
+      background: #2a1520;
+      border: 1px solid #4a2535;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 700px;
+      margin: 0 auto 16px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--rose);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #3a2030;
+      font-size: 15px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: #b08090; font-size: 13px; }
+    .info-val { font-weight: 700; color: #f0e0e8; max-width: 55%; text-align: right; }
+    .badge {
+      display: inline-block;
+      background: var(--deep);
+      color: white;
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge.green { background: var(--green); color: #1a3324; }
+    .badge.gold  { background: #e8b86d; color: #3d2810; }
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .event-item {
+      background: #1a0f17;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .event-type { font-weight: 700; color: var(--rose); }
+    .event-time { color: #7a5060; font-size: 11px; }
+    .event-detail { color: #d0a0b0; font-size: 12px; margin-top: 2px; }
+    .no-data {
+      text-align: center;
+      color: #7a5060;
+      padding: 32px;
+      font-size: 14px;
+    }
+    .refresh-btn {
+      display: block;
+      margin: 0 auto 24px;
+      background: var(--deep);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 28px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .clear-btn {
+      display: block;
+      margin: 0 auto 0;
+      background: transparent;
+      color: #7a5060;
+      border: 1px solid #4a2535;
+      border-radius: 999px;
+      padding: 10px 24px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .top-note {
+      background: #2a1520;
+      border: 1px solid var(--deep);
+      border-radius: 12px;
+      padding: 12px 16px;
+      max-width: 700px;
+      margin: 0 auto 20px;
+      font-size: 13px;
+      color: #d0a0b0;
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 Secret Dashboard</h1>
+  <p class="sub">Only you can see this, bestie 🫶</p>
+
+  <div class="top-note">
+    This page tracks everything that happens on the date site.<br>
+    Share <strong>index.html</strong> with her — keep <strong>admin.html</strong> for yourself 🤫
+  </div>
+
+  <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+
+  <div class="grid" id="stats-grid">
+    <div class="stat"><div class="stat-val rose" id="stat-no">–</div><div class="stat-label">Times She Hit "No"</div></div>
+    <div class="stat"><div class="stat-val green" id="stat-yes">–</div><div class="stat-label">Said Yes?</div></div>
+    <div class="stat"><div class="stat-val gold" id="stat-movie">–</div><div class="stat-label">Movie Chosen</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Date Details</div>
+    <div class="info-row">
+      <span class="info-key">Movie</span>
+      <span class="info-val" id="d-movie">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">Date</span>
+      <span class="info-val" id="d-date">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">Time</span>
+      <span class="info-val" id="d-time">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">Visit Time</span>
+      <span class="info-val" id="d-visit">—</span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">Status</span>
+      <span class="info-val" id="d-status">—</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📜 Event Log (newest first)</div>
+    <div class="event-list" id="event-list">
+      <div class="no-data">No events yet — send her the link! 🌸</div>
+    </div>
+  </div>
+
+  <br>
+  <button class="clear-btn" onclick="clearData()">🗑 Clear all tracking data</button>
+
+  <script>
+    const EVENT_LABELS = {
+      site_visited: { label: '🌐 Site Visited', color: '#e8b86d' },
+      yes_clicked:  { label: '💚 Said YES!!',   color: '#48bb78' },
+      no_clicked:   { label: '❌ Hit "No"',      color: '#e8849a' },
+      movie_selected: { label: '🎬 Picked Movie', color: '#90cdf4' },
+      went_to_movies: { label: '📽 Went to Movies', color: '#90cdf4' },
+      went_to_datetime: { label: '📅 Picking Date', color: '#b794f4' },
+      ticket_generated: { label: '🎟 Ticket Made!', color: '#68d391' },
+    };
+
+    function loadData() {
+      let raw;
+      try { raw = localStorage.getItem('dateTrack'); } catch(e) {}
+
+      if (!raw) {
+        document.getElementById('stat-no').textContent = '0';
+        document.getElementById('stat-yes').textContent = 'Not yet';
+        document.getElementById('stat-movie').textContent = '—';
+        document.getElementById('d-movie').textContent = '—';
+        document.getElementById('d-date').textContent = '—';
+        document.getElementById('d-time').textContent = '—';
+        document.getElementById('d-visit').textContent = '—';
+        document.getElementById('d-status').innerHTML = '<span class="badge">Waiting…</span>';
+        document.getElementById('event-list').innerHTML = '<div class="no-data">No events yet — send her the link! 🌸</div>';
+        return;
+      }
+
+      const data = JSON.parse(raw);
+
+      document.getElementById('stat-no').textContent = data.noCount || 0;
+
+      const didYes = (data.events || []).some(e => e.type === 'yes_clicked');
+      document.getElementById('stat-yes').textContent = didYes ? 'YES!! 💕' : 'Not yet';
+
+      document.getElementById('stat-movie').textContent = data.selectedMovie?.name || '—';
+      document.getElementById('d-movie').textContent = data.selectedMovie ? `${data.selectedMovie.emoji || ''} ${data.selectedMovie.name}` : '—';
+      document.getElementById('d-date').textContent = data.selectedDate || '—';
+      document.getElementById('d-time').textContent = data.selectedTime || '—';
+
+      if (data.visitTime) {
+        const vt = new Date(data.visitTime);
+        document.getElementById('d-visit').textContent = vt.toLocaleString();
+      }
+
+      const ticketMade = (data.events || []).some(e => e.type === 'ticket_generated');
+      const statusEl = document.getElementById('d-status');
+      if (ticketMade) {
+        statusEl.innerHTML = '<span class="badge green">🎉 Ticket Generated!</span>';
+      } else if (didYes) {
+        statusEl.innerHTML = '<span class="badge gold">🌸 In Progress</span>';
+      } else {
+        statusEl.innerHTML = '<span class="badge">Waiting…</span>';
+      }
+
+      const events = [...(data.events || [])].reverse();
+      if (events.length === 0) {
+        document.getElementById('event-list').innerHTML = '<div class="no-data">No events yet</div>';
+        return;
+      }
+
+      document.getElementById('event-list').innerHTML = events.map(e => {
+        const meta = EVENT_LABELS[e.type] || { label: e.type };
+        const t = new Date(e.time).toLocaleTimeString();
+        const detail = e.type === 'no_clicked' ? `(${e.detail?.count} total no's)` :
+                       e.type === 'movie_selected' ? e.detail?.movie :
+                       e.type === 'ticket_generated' ? `${e.detail?.movie} · ${e.detail?.date} ${e.detail?.time}` : '';
+        return `
+          <div class="event-item">
+            <div>
+              <div class="event-type" style="color:${meta.color || '#e8849a'}">${meta.label}</div>
+              ${detail ? `<div class="event-detail">${detail}</div>` : ''}
+            </div>
+            <div class="event-time">${t}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearData() {
+      if (confirm('Clear all tracking? This cannot be undone.')) {
+        localStorage.removeItem('dateTrack');
+        loadData();
+      }
+    }
+
+    loadData();
+    // auto-refresh every 10s
+    setInterval(loadData, 10000);
+  </script>
+</body>
+</html>

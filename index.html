@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>A Little Something for You 🌸</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;600;700;800&display=swap');
+
+    :root {
+      --blush: #f9c6d0;
+      --rose: #e8849a;
+      --deep-rose: #c45c78;
+      --cream: #fff8f3;
+      --warm: #fde8d8;
+      --gold: #e8b86d;
+      --text: #3d2030;
+      --soft: #8b5568;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen.active { display: flex; }
+
+    /* floating petals */
+    .petals-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .petal {
+      position: absolute; top: -60px;
+      font-size: clamp(14px, 4vw, 22px);
+      animation: fall linear infinite; opacity: 0.6;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── SCREEN 1 ASK ── */
+    #screen-ask {
+      background: linear-gradient(160deg, #fff0f5 0%, #fde8f0 50%, #fce4ec 100%);
+      text-align: center; gap: 32px;
+    }
+    .ask-envelope { font-size: 72px; animation: wobble 2s ease-in-out infinite; filter: drop-shadow(0 4px 16px rgba(228,132,154,0.3)); }
+    @keyframes wobble {
+      0%,100% { transform: rotate(-5deg) scale(1); }
+      50%      { transform: rotate(5deg) scale(1.08); }
+    }
+    .ask-title { font-family: 'Playfair Display', serif; font-size: clamp(26px,7vw,40px); color: var(--deep-rose); line-height: 1.25; }
+    .ask-subtitle { font-size: 16px; color: var(--soft); line-height: 1.6; max-width: 320px; }
+    .btn-group { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 280px; position: relative; }
+    .btn-yes {
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+      color: white; border: none; border-radius: 999px;
+      padding: 18px 36px;
+      font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800;
+      cursor: pointer; box-shadow: 0 6px 24px rgba(196,92,120,0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative; z-index: 10;
+    }
+    .btn-yes:active { transform: scale(0.96); }
+    .btn-yes.growing {
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      position: fixed !important; z-index: 9999; border-radius: 999px;
+    }
+    .btn-no {
+      background: white; color: var(--soft); border: 2px solid var(--blush);
+      border-radius: 999px; padding: 14px 28px;
+      font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 600;
+      cursor: pointer; transition: transform 0.15s, opacity 0.15s; position: relative;
+    }
+    .btn-no:active { transform: scale(0.95); }
+
+    /* ── SCREEN 2 THANKUU ── */
+    #screen-thankuu { background: linear-gradient(160deg,#fff0f5,#fce4ec); text-align: center; gap: 28px; }
+    .thankuu-gif { width: min(260px,80vw); border-radius: 24px; box-shadow: 0 8px 32px rgba(196,92,120,0.25); }
+    .thankuu-title { font-family: 'Playfair Display', serif; font-size: clamp(24px,7vw,36px); color: var(--deep-rose); }
+    .thankuu-msg { font-size: 16px; color: var(--soft); line-height: 1.7; max-width: 300px; }
+
+    /* ── SCREEN 3 MOVIES ── */
+    #screen-movies { background: linear-gradient(160deg,#fff8f3,#fde8d8); gap: 20px; padding-top: 48px; }
+    .section-eyebrow { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rose); font-weight: 700; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(22px,6vw,32px); color: var(--text); text-align: center; line-height: 1.3; }
+    .movies-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 420px; }
+    .movie-card {
+      background: white; border-radius: 16px; overflow: hidden;
+      cursor: pointer; border: 2.5px solid transparent;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .movie-card.selected { border-color: var(--rose); box-shadow: 0 4px 20px rgba(228,132,154,0.35); transform: translateY(-2px); }
+    .movie-card .check { position: absolute; top: 7px; right: 8px; font-size: 16px; opacity: 0; transition: opacity 0.2s; z-index: 2; background: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+    .movie-card.selected .check { opacity: 1; }
+    .movie-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: var(--blush); }
+    .movie-info { padding: 10px 10px 12px; }
+    .movie-name { font-size: 12px; font-weight: 800; color: var(--text); line-height: 1.3; }
+    .movie-year { font-size: 10px; color: var(--soft); margin-top: 2px; }
+
+    /* ── SCREEN 4 DATETIME ── */
+    #screen-datetime { background: linear-gradient(160deg,#fff0f5,#fce4ec); gap: 20px; }
+
+    /* Custom calendar */
+    .cal-wrap { background: white; border-radius: 24px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .cal-month { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); font-weight: 700; }
+    .cal-nav { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--rose); padding: 6px 10px; border-radius: 50%; transition: background 0.15s; line-height: 1; }
+    .cal-nav:hover { background: var(--blush); }
+    .cal-days-header { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: 8px; }
+    .cal-days-header span { font-size: 11px; font-weight: 700; color: var(--soft); letter-spacing: 0.05em; padding: 4px 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+    .cal-cell {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; border-radius: 50%; cursor: pointer;
+      color: var(--text); transition: background 0.15s, color 0.15s; border: none; background: none;
+    }
+    .cal-cell:hover:not(.disabled):not(.empty) { background: var(--blush); }
+    .cal-cell.today { border: 2px solid var(--rose); color: var(--rose); }
+    .cal-cell.selected { background: var(--rose); color: white; }
+    .cal-cell.selected.today { border-color: var(--deep-rose); }
+    .cal-cell.disabled { color: #d0bbc0; cursor: default; }
+    .cal-cell.empty { cursor: default; }
+
+    /* Time pills */
+    .time-section { background: white; border-radius: 24px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    .dt-label { font-size: 13px; font-weight: 700; color: var(--rose); margin-bottom: 12px; letter-spacing: 0.05em; }
+    .time-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .time-pill {
+      background: var(--warm); border: 2px solid transparent;
+      border-radius: 999px; padding: 9px 16px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--soft); cursor: pointer; transition: all 0.2s;
+    }
+    .time-pill.selected { background: var(--rose); border-color: var(--rose); color: white; }
+
+    /* ── SCREEN 5 TICKET ── */
+    #screen-ticket { background: linear-gradient(160deg,#fff0f5,#fce4ec); gap: 24px; text-align: center; padding: 40px 24px; }
+    .ticket-wrap { position: relative; width: min(340px,90vw); animation: ticketIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both; }
+    @keyframes ticketIn {
+      from { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .ticket { background: white; border-radius: 20px; box-shadow: 0 12px 48px rgba(196,92,120,0.25); overflow: hidden; }
+
+    /* ticket top: movie poster strip */
+    .ticket-poster-strip {
+      position: relative; height: 180px; overflow: hidden;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+    }
+    .ticket-poster-img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top center;
+      display: block; opacity: 0.75;
+    }
+    .ticket-poster-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(196,92,120,0.3) 0%, rgba(60,20,40,0.85) 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      padding: 16px;
+    }
+    .ticket-eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 5px; }
+    .ticket-movie-title { font-family: 'Playfair Display', serif; font-size: 22px; color: white; line-height: 1.2; text-shadow: 0 1px 8px rgba(0,0,0,0.4); }
+    .ticket-movie-sub { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+
+    /* tear line */
+    .ticket-tear { display: flex; align-items: center; height: 0; position: relative; margin: 0; }
+    .ticket-tear::before { content: ''; position: absolute; left: -14px; width: 28px; height: 28px; background: var(--cream); border-radius: 50%; z-index: 1; }
+    .ticket-tear::after  { content: ''; position: absolute; right: -14px; width: 28px; height: 28px; background: var(--cream); border-radius: 50%; z-index: 1; }
+    .ticket-tear-line { flex: 1; border-top: 2.5px dashed var(--blush); margin: 14px 14px; }
+
+    /* ticket body */
+    .ticket-body { padding: 20px 22px 20px; }
+    .ticket-row { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .ticket-field label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--soft); display: block; margin-bottom: 4px; }
+    .ticket-field span { font-size: 14px; font-weight: 800; color: var(--text); }
+    .ticket-hearts { text-align: center; font-size: 22px; letter-spacing: 6px; margin: 4px 0 8px; }
+    .ticket-code { font-size: 10px; color: var(--blush); text-align: center; letter-spacing: 2px; font-family: monospace; }
+
+    /* shared */
+    .z1 { position: relative; z-index: 1; }
+    .btn-next {
+      background: linear-gradient(135deg, var(--gold), #d4965a);
+      color: white; border: none; border-radius: 999px; padding: 16px 40px;
+      font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800;
+      cursor: pointer; box-shadow: 0 6px 20px rgba(212,150,90,0.35); transition: transform 0.2s;
+    }
+    .btn-next:active { transform: scale(0.97); }
+    .fade-in { animation: fadeIn 0.5s ease both; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(18px); } to { opacity:1; transform: translateY(0); } }
+
+    /* confetti */
+    .confetti-burst { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+    .confetti-bit { position: absolute; top: -20px; font-size: 20px; animation: confettiFall 2.5s ease-in both; }
+    @keyframes confettiFall {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg) scale(0.5); opacity: 0; }
+    }
+    .heart-float { position: fixed; font-size: 22px; animation: heartPop 1s ease-out both; pointer-events: none; z-index: 9999; }
+    @keyframes heartPop {
+      0%   { transform: translateY(0) scale(0); opacity: 1; }
+      100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="petals-bg" id="petals-bg"></div>
+
+<!-- ══ SCREEN 1: ASK ══════════════════════════════ -->
+<div id="screen-ask" class="screen active">
+  <div class="ask-envelope z1">💌</div>
+  <h1 class="ask-title z1">Hey you,<br><em>do you wanna watch<br>a movie with me?</em></h1>
+  <p class="ask-subtitle z1">I've been thinking about us having a little movie night together… 🎬🍿</p>
+  <div class="btn-group z1">
+    <button class="btn-yes" id="btn-yes" onclick="handleYes()">Yusss!! 🌸</button>
+    <button class="btn-no"  id="btn-no"  onclick="handleNo()">no 🙁</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: THANKUU ══════════════════════════ -->
+<div id="screen-thankuu" class="screen">
+  <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWIwNGF2azFuYW0xcW80cHlhZ3draXB1c2JhbHFidGpqa2UyamFpdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l4pTjOu0NsrLApt0c/giphy.gif" alt="flowers" class="thankuu-gif z1" />
+  <h2 class="thankuu-title z1">Thankuuu!! 🌷<br><em>I knew you would~</em></h2>
+  <p class="thankuu-msg z1">I knew u will say yuss hehe 💕<br>You make everything so much sweeter just by being you.</p>
+  <button class="btn-next z1" onclick="goToMovies()">Pick a movie together →</button>
+</div>
+
+<!-- ══ SCREEN 3: MOVIES ═══════════════════════════ -->
+<div id="screen-movies" class="screen">
+  <p class="section-eyebrow z1">Step 1 of 2</p>
+  <h2 class="section-title z1">Which one are we<br>watching? 🎞️</h2>
+  <div class="movies-grid z1" id="movies-grid"></div>
+  <button class="btn-yes z1" id="btn-movie-next"
+    style="opacity:0.4;pointer-events:none;max-width:280px;margin-top:4px;"
+    onclick="goToDateTime()">Pick this one! 🎬</button>
+</div>
+
+<!-- ══ SCREEN 4: DATE & TIME ═════════════════════ -->
+<div id="screen-datetime" class="screen">
+  <p class="section-eyebrow z1">Step 2 of 2</p>
+  <h2 class="section-title z1">When's our<br>movie night? 🌙</h2>
+
+  <!-- Custom Calendar -->
+  <div class="cal-wrap z1">
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrev()">‹</button>
+      <span class="cal-month" id="cal-month-label"></span>
+      <button class="cal-nav" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-days-header">
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span>
+      <span>Th</span><span>Fr</span><span>Sa</span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- Time -->
+  <div class="time-section z1">
+    <div class="dt-label">⏰ What time?</div>
+    <div class="time-pills">
+      <button class="time-pill" onclick="selectTime(this,'5:00 PM')">5:00 PM</button>
+      <button class="time-pill" onclick="selectTime(this,'7:00 PM')">7:00 PM</button>
+      <button class="time-pill" onclick="selectTime(this,'8:00 PM')">8:00 PM</button>
+      <button class="time-pill" onclick="selectTime(this,'9:00 PM')">9:00 PM</button>
+      <button class="time-pill" onclick="selectTime(this,'10:00 PM')">10:00 PM</button>
+    </div>
+  </div>
+
+  <button class="btn-yes z1" id="btn-dt-next"
+    style="opacity:0.4;pointer-events:none;max-width:280px;"
+    onclick="goToTicket()">Make our ticket! 🎟️</button>
+</div>
+
+<!-- ══ SCREEN 5: TICKET ═══════════════════════════ -->
+<div id="screen-ticket" class="screen">
+  <p class="section-eyebrow z1">It's official ✨</p>
+  <h2 class="section-title z1" style="margin-bottom:4px">Your movie date ticket</h2>
+
+  <div class="ticket-wrap z1">
+    <div class="ticket">
+      <!-- poster strip -->
+      <div class="ticket-poster-strip">
+        <img id="ticket-poster-img" src="" alt="movie poster" class="ticket-poster-img" />
+        <div class="ticket-poster-overlay">
+          <p class="ticket-eyebrow">🎬 Movie Night 🎬</p>
+          <h2 class="ticket-movie-title" id="ticket-movie-name">—</h2>
+          <p class="ticket-movie-sub" id="ticket-movie-sub">—</p>
+        </div>
+      </div>
+
+      <!-- tear -->
+      <div class="ticket-tear"><div class="ticket-tear-line"></div></div>
+
+      <!-- body -->
+      <div class="ticket-body">
+        <div class="ticket-row">
+          <div class="ticket-field">
+            <label>Date</label>
+            <span id="ticket-date">—</span>
+          </div>
+          <div class="ticket-field" style="text-align:right">
+            <label>Time</label>
+            <span id="ticket-time">—</span>
+          </div>
+        </div>
+        <div class="ticket-row">
+          <div class="ticket-field">
+            <label>With</label>
+            <span>Just us two 💕</span>
+          </div>
+          <div class="ticket-field" style="text-align:right">
+            <label>Vibes</label>
+            <span>Very cozy 🍿</span>
+          </div>
+        </div>
+        <div class="ticket-hearts">🌸 💕 🌷 💖 ✨</div>
+        <div class="ticket-code">NO. 00001 · ADMIT TWO · DATE NIGHT</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="z1" style="font-size:15px;color:var(--soft);line-height:1.8;max-width:300px;text-align:center;">
+    Can't wait for this night with you 🌸<br>
+    <em style="color:var(--rose)">It's going to be so so special~</em>
+  </p>
+</div>
+
+<div class="confetti-burst" id="confetti-burst"></div>
+
+<script>
+  // ── STATE ────────────────────────────────────────
+  const state = {
+    noCount: 0, yesGrowStep: 0,
+    selectedMovie: null, selectedDate: null, selectedTime: null,
+    visitTime: new Date().toISOString(), events: []
+  };
+
+  function logEvent(type, detail = {}) {
+    state.events.push({ type, detail, time: new Date().toISOString() });
+    try { localStorage.setItem('dateTrack', JSON.stringify(state)); } catch(e) {}
+  }
+
+  // ── PETALS ───────────────────────────────────────
+  const petalEmojis = ['🌸','🌺','✿','💮','🌼','💕','🌷'];
+  (function spawnPetals() {
+    const bg = document.getElementById('petals-bg');
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.textContent = petalEmojis[Math.floor(Math.random() * petalEmojis.length)];
+      p.style.cssText = `left:${Math.random()*100}vw;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*12}s;font-size:${12+Math.random()*12}px`;
+      bg.appendChild(p);
+    }
+  })();
+  logEvent('site_visited');
+
+  // ── NAV ──────────────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    el.classList.add('active');
+    el.querySelectorAll('.z1').forEach((c, i) => {
+      c.style.animation = 'none'; c.offsetHeight;
+      c.style.animation = `fadeIn 0.5s ease ${i*0.07}s both`;
+    });
+  }
+
+  // ── HANDLE YES ───────────────────────────────────
+  function handleYes() {
+    logEvent('yes_clicked');
+    burstHearts(document.getElementById('btn-yes'));
+    setTimeout(() => { showScreen('screen-thankuu'); launchConfetti(); }, 600);
+  }
+
+  // ── HANDLE NO ────────────────────────────────────
+  function handleNo() {
+    state.noCount++; state.yesGrowStep++;
+    logEvent('no_clicked', { count: state.noCount });
+    const yesBtn = document.getElementById('btn-yes');
+    const noBtn  = document.getElementById('btn-no');
+    noBtn.style.transform = 'scale(0.88) rotate(-3deg)';
+    setTimeout(() => { noBtn.style.transform = ''; }, 300);
+
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const sizes = [
+      { w: 300, h: 70, fs: 22 },
+      { w: 360, h: 90, fs: 26 },
+      { w: vw * 0.9, h: 110, fs: 30 },
+      { w: vw, h: vh, fs: 38, cover: true }
+    ];
+    const step = Math.min(state.yesGrowStep - 1, sizes.length - 1);
+    const s = sizes[step];
+
+    if (s.cover) {
+      yesBtn.classList.add('growing');
+      yesBtn.style.cssText += ';width:100vw;height:100vh;font-size:38px;border-radius:0;top:0;left:0;transform:none;';
+      yesBtn.textContent = '✨ ok fine… YUSSS!! 🌸';
+      noBtn.style.display = 'none';
+    } else {
+      yesBtn.style.maxWidth = s.w + 'px';
+      yesBtn.style.width = '100%';
+      yesBtn.style.padding = (s.h/2 - 12) + 'px 20px';
+      yesBtn.style.fontSize = s.fs + 'px';
+      const msgs = ["Yusss!! 🌸 (c'mon~)", "YUSSS!! 💕 (you know you want to~)", "YUUUSSS!! 🌺 (resistance is futile 🌸)"];
+      yesBtn.textContent = msgs[step] || 'Yusss!!';
+    }
+  }
+
+  // ── MOVIES ───────────────────────────────────────
+  const movies = [
+    { name: "Spirited Away",      year: "2001", desc: "Magic & wonder",     poster: "https://image.tmdb.org/t/p/w342/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
+    { name: "Up",                 year: "2009", desc: "Love & adventure",   poster: "https://image.tmdb.org/t/p/w342/pnPXSGPlRNkFbBovj4PjCw4ENQY.jpg" },
+    { name: "Coco",               year: "2017", desc: "Family & memory",    poster: "https://image.tmdb.org/t/p/w342/gGEsBPAijhVUFoiNpgZXqRVWJt2.jpg" },
+    { name: "Inside Out",         year: "2015", desc: "Emotions & heart",   poster: "https://image.tmdb.org/t/p/w342/aAmfIX3TT40zUHGcCKrlOZRKC7u.jpg" },
+    { name: "Princess Mononoke",  year: "1997", desc: "Nature & spirit",    poster: "https://image.tmdb.org/t/p/w342/jHmDfBMiVxWdXO6n0Xugm7Twlno.jpg" },
+    { name: "Soul",               year: "2020", desc: "Purpose & jazz",     poster: "https://image.tmdb.org/t/p/w342/hm58fLFMBRnzFBdnow4GIQZ2eOl.jpg" },
+    { name: "My Neighbor Totoro", year: "1988", desc: "Wonder & warmth",    poster: "https://image.tmdb.org/t/p/w342/rtGDOeG9LzoerkDGZF9dnVeLppL.jpg" },
+    { name: "Encanto",            year: "2021", desc: "Family & magic",     poster: "https://image.tmdb.org/t/p/w342/4j0PNHkMr5ax3IA8tjtxcmPU3QT.jpg" },
+  ];
+
+  (function renderMovies() {
+    document.getElementById('movies-grid').innerHTML = movies.map((m, i) => `
+      <div class="movie-card" onclick="selectMovie(${i}, this)">
+        <span class="check">✅</span>
+        <img class="movie-poster" src="${m.poster}" alt="${m.name}"
+          onerror="this.style.background='var(--blush)';this.style.height='140px';" />
+        <div class="movie-info">
+          <div class="movie-name">${m.name}</div>
+          <div class="movie-year">${m.year} · ${m.desc}</div>
+        </div>
+      </div>`).join('');
+  })();
+
+  function selectMovie(i, el) {
+    document.querySelectorAll('.movie-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.selectedMovie = movies[i];
+    logEvent('movie_selected', { movie: movies[i].name });
+    const btn = document.getElementById('btn-movie-next');
+    btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+    burstHearts(el);
+  }
+
+  function goToMovies() { logEvent('went_to_movies'); showScreen('screen-movies'); }
+
+  // ── CUSTOM CALENDAR ──────────────────────────────
+  let calYear, calMonth, calSelectedDate = null;
+
+  function initCal() {
+    const now = new Date();
+    calYear = now.getFullYear(); calMonth = now.getMonth();
+    renderCal();
+  }
+
+  function renderCal() {
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('cal-month-label').textContent = months[calMonth] + ' ' + calYear;
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const first = new Date(calYear, calMonth, 1).getDay();
+    const days  = new Date(calYear, calMonth+1, 0).getDate();
+
+    for (let i = 0; i < first; i++) {
+      const c = document.createElement('button'); c.className = 'cal-cell empty'; grid.appendChild(c);
+    }
+    for (let d = 1; d <= days; d++) {
+      const c = document.createElement('button');
+      c.className = 'cal-cell'; c.textContent = d;
+      const thisDate = new Date(calYear, calMonth, d);
+      thisDate.setHours(0,0,0,0);
+      if (thisDate < today) { c.classList.add('disabled'); c.disabled = true; }
+      else {
+        if (thisDate.getTime() === today.getTime()) c.classList.add('today');
+        const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        if (calSelectedDate === iso) c.classList.add('selected');
+        c.onclick = () => pickDay(iso, c);
+      }
+      grid.appendChild(c);
+    }
+  }
+
+  function pickDay(iso, el) {
+    calSelectedDate = iso;
+    state.selectedDate = iso;
+    document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    checkDT();
+  }
+
+  function calPrev() {
+    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCal();
+  }
+  function calNext() {
+    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCal();
+  }
+
+  let selectedTimePill = null;
+  function selectTime(el, time) {
+    document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTimePill = time; state.selectedTime = time;
+    checkDT();
+  }
+  function checkDT() {
+    const btn = document.getElementById('btn-dt-next');
+    if (calSelectedDate && selectedTimePill) {
+      btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+    }
+  }
+
+  function goToDateTime() {
+    logEvent('went_to_datetime');
+    showScreen('screen-datetime');
+    initCal();
+  }
+
+  // ── TICKET ───────────────────────────────────────
+  function goToTicket() {
+    const m = state.selectedMovie;
+    logEvent('ticket_generated', { movie: m?.name, date: state.selectedDate, time: state.selectedTime });
+    document.getElementById('ticket-poster-img').src = m?.poster || '';
+    document.getElementById('ticket-movie-name').textContent = m?.name || '—';
+    document.getElementById('ticket-movie-sub').textContent = (m?.year || '') + ' · ' + (m?.desc || '');
+    const d = new Date(state.selectedDate + 'T12:00:00');
+    document.getElementById('ticket-date').textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+    document.getElementById('ticket-time').textContent = state.selectedTime;
+    showScreen('screen-ticket');
+    setTimeout(launchConfetti, 400);
+  }
+
+  // ── FX ───────────────────────────────────────────
+  function launchConfetti() {
+    const burst = document.getElementById('confetti-burst');
+    burst.innerHTML = '';
+    const bits = ['🌸','💕','✨','🌺','💛','🌷','🎉','💝','🎀'];
+    for (let i = 0; i < 30; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-bit';
+      c.textContent = bits[Math.floor(Math.random() * bits.length)];
+      c.style.cssText = `left:${Math.random()*100}vw;animation-delay:${Math.random()*1.2}s;font-size:${14+Math.random()*16}px`;
+      burst.appendChild(c);
+    }
+    setTimeout(() => { burst.innerHTML = ''; }, 4000);
+  }
+
+  function burstHearts(el) {
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+    ['💕','🌸','💖','✨'].forEach((em, i) => {
+      const h = document.createElement('div');
+      h.className = 'heart-float';
+      h.textContent = em;
+      h.style.cssText = `left:${cx + (Math.random()-0.5)*60}px;top:${cy}px;animation-delay:${i*0.08}s`;
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1200);
+    });
+  }
+</script>
+</body>
+</html>
